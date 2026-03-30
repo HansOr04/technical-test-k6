@@ -267,7 +267,7 @@ export function handleSummary(data) {
   // ---------------------------------------------------------------------------
   return {
     // Archivo JSON persistido en /results (ignorado por .gitignore)
-    '../results/summary.json': JSON.stringify(resumen, null, 2),
+    'results/summary.json': JSON.stringify(resumen, null, 2),
 
     // Reporte estándar de k6 en stdout (tabla de métricas completa)
     'stdout': textSummary(data, { indent: ' ', enableColors: true }),

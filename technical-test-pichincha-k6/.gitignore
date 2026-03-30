@@ -1,0 +1,4 @@
+results/*.json
+results/*.html
+results/summary*
+node_modules/

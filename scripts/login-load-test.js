@@ -111,7 +111,7 @@ const HEADERS = { 'Content-Type': 'application/json' };
 // =============================================================================
 // FUNCIÓN PRINCIPAL (ejecutada por cada VU en cada iteración)
 // =============================================================================
-export default function () {
+export default function loginTest() {
 
   // ---------------------------------------------------------------------------
   // SELECCIÓN DE USUARIO
@@ -152,9 +152,10 @@ export default function () {
   let body = {};
   try {
     body = JSON.parse(res.body);
-  } catch (_) {
+  } catch (e) {
     // Si el body no es JSON válido, body queda como objeto vacío.
     // El check de "contiene token" fallará correctamente.
+    console.debug(`Body no es JSON válido: ${e.message}`);
   }
 
   // ---------------------------------------------------------------------------
@@ -164,8 +165,8 @@ export default function () {
   // ---------------------------------------------------------------------------
   const todosOk = check(res, {
 
-    // 1. La API debe responder con HTTP 200
-    'status es 200': (r) => r.status === 200,
+    // 1. La API responde con HTTP 200 o 201 (ambos son éxito en esta API)
+    'status es 200 o 201': (r) => r.status === 200 || r.status === 201,
 
     // 2. El body no debe estar vacío (string con contenido)
     'body no está vacío': (r) => r.body && r.body.length > 0,
@@ -218,10 +219,6 @@ export function handleSummary(data) {
   const exitosos        = data.metrics.login_exitosos?.values?.count ?? 0;
   const fallidos        = data.metrics.login_fallidos?.values?.count ?? 0;
 
-  // ¿Se cumplieron los thresholds?
-  const thresholdOk = !data.metrics.http_req_duration?.thresholds?.['p(95)<1500']?.ok === false
-    && !data.metrics.http_req_failed?.thresholds?.['rate<0.03']?.ok === false;
-
   // ---------------------------------------------------------------------------
   // OBJETO DE REPORTE FINAL
   // ---------------------------------------------------------------------------
@@ -233,19 +230,19 @@ export function handleSummary(data) {
       fechaEjecucion: new Date().toISOString(),
     },
     resultado: {
-      tpsAlcanzado:      parseFloat(tpsAlcanzado),
-      duracionSegundos:  parseFloat(duracionSegundos.toFixed(2)),
+      tpsAlcanzado:      Number.parseFloat(tpsAlcanzado),
+      duracionSegundos:  Number.parseFloat(duracionSegundos.toFixed(2)),
       totalRequests:     totalRequests,
       loginExitosos:     exitosos,
       loginFallidos:     fallidos,
     },
     sla: {
-      p95_ms:            parseFloat(p95),
+      p95_ms:            Number.parseFloat(p95),
       umbralP95_ms:      1500,
-      p95_cumple:        parseFloat(p95) < 1500,
-      tasaErrorPct:      parseFloat(tasaErrorPct),
+      p95_cumple:        Number.parseFloat(p95) < 1500,
+      tasaErrorPct:      Number.parseFloat(tasaErrorPct),
       umbralErrorPct:    3,
-      error_cumple:      parseFloat(tasaErrorPct) < 3,
+      error_cumple:      Number.parseFloat(tasaErrorPct) < 3,
     },
     metricas: {
       http_req_duration: {
